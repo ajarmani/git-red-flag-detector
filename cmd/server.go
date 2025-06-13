@@ -1,18 +1,25 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"os"
 
 	"github.com/ajarmani/git-red-flag-detector/internal/resolver"
 	"github.com/ajarmani/git-red-flag-detector/internal/scanner"
 )
 
 func main() {
-	// For testing purposes, using hello-world repo
-	repoPath := "/Users/mbalakrishna/Desktop/Desktop/Golang/hello-world"
-	commitHash := "2215cb0"
+	repoPath := flag.String("repo", "", "Absolute path to the Git repo")
+	commitHash := flag.String("commit", "", "Commit hash to scan")
+	flag.Parse()
 
-	diffs, err := resolver.GetCommitDiff(repoPath, commitHash)
+	if *repoPath == "" || *commitHash == "" {
+		fmt.Println("Usage: go run cmd/server.go --repo /path/to/repo --commit <hash>")
+		os.Exit(1)
+	}
+
+	diffs, err := resolver.GetCommitDiff(*repoPath, *commitHash)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
