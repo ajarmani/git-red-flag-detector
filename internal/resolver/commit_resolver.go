@@ -51,3 +51,18 @@ func GetCommitDiff(repoPath, commitHash string) ([]FileDiff, error) {
 
 	return result, nil
 }
+
+// GetLastNCommits returns the last N commit hashes from a Git repo
+func GetLastNCommits(repoPath string, n int) ([]string, error) {
+	cmd := exec.Command("git", "-C", repoPath, "rev-list", "--max-count", fmt.Sprintf("%d", n), "HEAD")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get last %d commits: %v", n, err)
+	}
+
+	lines := strings.Split(strings.TrimSpace(out.String()), "\n")
+	return lines, nil
+}
