@@ -2,68 +2,41 @@ package resolver
 
 import (
 	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
 	"testing"
+
+	"github.com/ajarmani/git-red-flag-detector/internal/testutils"
 )
 
-func setupTestRepo(t *testing.T) (string, []string) {
-	dir, err := os.MkdirTemp("", "git-test")
-	if err != nil {
-		t.Fatalf("failed to create temp dir: %v", err)
-	}
+var testRepoPath string
+var testCommitHashes []string
 
-	run := func(args ...string) {
-		cmd := exec.Command(args[0], args[1:]...)
-		cmd.Dir = dir
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Fatalf("git %v failed: %v\nOutput:\n%s", args, err, out)
-		}
-	}
+func TestMain(m *testing.M) {
+	// Global test setup
+	repo, hashes := testutils.SetupTestRepo(&testing.T{})
+	testRepoPath = repo
+	testCommitHashes = hashes
 
-	// Init git repo
-	run("git", "init")
-	run("git", "config", "user.email", "test@example.com")
-	run("git", "config", "user.name", "tester")
+	// Run tests
+	code := m.Run()
 
-	// Create and commit files
-	var hashes []string
-	for i := 1; i <= 3; i++ {
-		file := filepath.Join(dir, "file.txt")
-		content := []byte("line " + strconv.Itoa(i) + "\n")
-		err := os.WriteFile(file, content, 0644)
-		if err != nil {
-			t.Fatalf("write failed: %v", err)
-		}
-		run("git", "add", ".")
-		run("git", "commit", "-m", "Commit "+strconv.Itoa(i))
-
-		out, _ := exec.Command("git", "-C", dir, "rev-parse", "HEAD").Output()
-		hashes = append(hashes, string(out[:len(out)-1]))
-	}
-
-	return dir, hashes
+	os.Exit(code)
 }
 
 func TestGetLastNCommits(t *testing.T) {
-	repo, hashes := setupTestRepo(t)
-	got, err := GetLastNCommits(repo, 2)
+	got, err := GetLastNCommits(testRepoPath, 2)
 	if err != nil {
 		t.Fatalf("error getting commits: %v", err)
 	}
 	if len(got) != 2 {
 		t.Errorf("expected 2 commits, got %d", len(got))
 	}
-	if got[0] != hashes[2] || got[1] != hashes[1] {
+	if got[0] != testCommitHashes[2] || got[1] != testCommitHashes[1] {
 		t.Errorf("unexpected commit order. got %v", got)
 	}
 }
 
 func TestGetCommitDiff(t *testing.T) {
-	repo, hashes := setupTestRepo(t)
-	diffs, err := GetCommitDiff(repo, hashes[2])
+	diffs, err := GetCommitDiff(testRepoPath, testCommitHashes[2])
 	if err != nil {
 		t.Fatalf("error getting diff: %v", err)
 	}

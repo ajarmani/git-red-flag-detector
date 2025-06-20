@@ -39,7 +39,8 @@ func main() {
 			for _, d := range diffs {
 				flags := scanner.ScanDiff(d.FileName, d.Diff)
 				for _, flag := range flags {
-					fmt.Printf("RED FLAG in %s:\n   ➤ Pattern: %s\n   ➤ Line: %s\n\n", flag.FileName, flag.Pattern, flag.Line)
+					fmt.Printf("RED FLAG in %s:\n   ➤ Rule: %s (%s)\n   ➤ Line: %s\n\n",
+						flag.FileName, flag.RuleID, flag.RuleDesc, flag.Line)
 				}
 			}
 		}
@@ -53,7 +54,8 @@ func main() {
 		for _, d := range diffs {
 			flags := scanner.ScanDiff(d.FileName, d.Diff)
 			for _, flag := range flags {
-				fmt.Printf("RED FLAG in %s:\n   ➤ Pattern: %s\n   ➤ Line: %s\n\n", flag.FileName, flag.Pattern, flag.Line)
+				fmt.Printf("RED FLAG in %s:\n   ➤ Rule: %s (%s)\n   ➤ Line: %s\n\n",
+					flag.FileName, flag.RuleID, flag.RuleDesc, flag.Line)
 			}
 		}
 	}

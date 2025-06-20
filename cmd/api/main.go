@@ -40,11 +40,15 @@ func scanHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(allFlags)
 }
 
-func main() {
+func setupRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Post("/scan", scanHandler)
+	return r
+}
 
-	fmt.Println("REST server running at http://localhost:8080")
+func main() {
+	r := setupRouter()
+	fmt.Println("🚀 REST server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
